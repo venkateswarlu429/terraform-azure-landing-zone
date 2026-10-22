@@ -1,0 +1,108 @@
+name: Terraform CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "modules/**"
+      - "environments/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "modules/**"
+      - "environments/**"
+      - ".github/workflows/ci.yml"
+
+permissions:
+  contents: read
+
+env:
+  TF_VERSION: "1.9.8"
+  TF_IN_AUTOMATION: "true"
+
+jobs:
+  fmt:
+    name: Format check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: terraform fmt
+        run: terraform fmt -check -recursive -diff
+
+  validate:
+    name: Validate (${{ matrix.workdir }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        workdir:
+          - modules/governance
+          - modules/networking
+          - modules/monitoring
+          - modules/shared-services
+          - modules/workload-aks
+          - environments/dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: terraform init (no backend)
+        working-directory: ${{ matrix.workdir }}
+        run: terraform init -backend=false -input=false
+
+      - name: terraform validate
+        working-directory: ${{ matrix.workdir }}
+        run: terraform validate
+
+  tflint:
+    name: tflint (${{ matrix.workdir }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        workdir:
+          - modules/governance
+          - modules/networking
+          - modules/monitoring
+          - modules/shared-services
+          - modules/workload-aks
+          - environments/dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up TFLint
+        uses: terraform-linters/setup-tflint@v4
+
+      # Bundled Terraform ruleset only (no .tflint.hcl): catches deprecated
+      # syntax, untyped/unused variables and missing version pins.
+      - name: tflint
+        working-directory: ${{ matrix.workdir }}
+        run: tflint --format compact
+
+  checkov:
+    name: Checkov (IaC security scan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Report-only until the findings are baselined: a landing zone
+      # intentionally creates a small number of public IPs (firewall,
+      # bastion), which generic scanners flag without the design context
+      # documented in the README.
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: terraform
+          output_format: cli
+          soft_fail: true

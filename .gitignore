@@ -1,0 +1,27 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+.terraform/
+.terraform.lock.hcl
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Variable files (may contain real subscription / object IDs when adapted)
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+backend.conf
+!backend.conf.example
+
+# CLI / editor / OS
+.terraformrc
+terraform.rc
+.idea/
+.vscode/
+*.swp
+.DS_Store

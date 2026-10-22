@@ -1,0 +1,8 @@
+# Example backend configuration. Copy to backend.conf (git-ignored), fill in
+# your real state storage, and initialise with:
+#   terraform init -backend-config=backend.conf
+# Values here override the example backend block in providers.tf.
+resource_group_name  = "rg-terraform-state"
+storage_account_name = "stterraformstatealz"
+container_name       = "tfstate"
+key                  = "landing-zone/dev.tfstate"

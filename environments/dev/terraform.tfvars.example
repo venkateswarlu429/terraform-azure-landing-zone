@@ -1,0 +1,21 @@
+# Copy to terraform.tfvars and replace every placeholder with real values.
+# terraform.tfvars is git-ignored on purpose — IDs belong in your own copy.
+
+location = "eastus2"
+
+# Subscriptions (replace the placeholder GUIDs with your tenant's):
+connectivity_subscription_id = "00000000-0000-0000-0000-000000000000"
+management_subscription_id   = "00000000-0000-0000-0000-000000000000"
+workload_subscription_id     = "00000000-0000-0000-0000-000000000000"
+
+# Subscriptions to file under the Corp management group:
+# corp_subscription_ids = ["00000000-0000-0000-0000-000000000000"]
+
+# Regions the Azure Policy guardrail will allow:
+allowed_locations = ["eastus2", "centralus"]
+
+# Key Vault names are globally unique — pick your own:
+key_vault_name = "kv-alz-shared-dev"
+
+# Entra ID group that should administer the AKS cluster:
+aks_admin_group_object_ids = ["00000000-0000-0000-0000-000000000000"]
